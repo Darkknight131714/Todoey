@@ -44,8 +44,9 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(primary: Colors.lightBlueAccent),
-              onPressed: () {
-                Provider.of<myTasks>(context, listen: false).addTask(task);
+              onPressed: () async {
+                await Provider.of<myTasks>(context, listen: false)
+                    .addTask(task);
                 Navigator.pop(context);
               },
               child: Text("Add"),

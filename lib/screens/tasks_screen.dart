@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'add_task_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class TasksScreen extends StatefulWidget {
   const TasksScreen({Key? key}) : super(key: key);
@@ -129,8 +130,9 @@ class _TaskTileState extends State<TaskTile> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onLongPress: () {
-        Provider.of<myTasks>(context, listen: false).removeTask(widget.index);
+      onLongPress: () async {
+        await Provider.of<myTasks>(context, listen: false)
+            .removeTask(widget.index);
       },
       child: ListTile(
         title: Text(
@@ -143,8 +145,8 @@ class _TaskTileState extends State<TaskTile> {
         trailing: Checkbox(
           activeColor: Colors.lightBlueAccent,
           value: Provider.of<myTasks>(context).status[widget.index],
-          onChanged: (bool? value) {
-            Provider.of<myTasks>(context, listen: false)
+          onChanged: (bool? value) async {
+            await Provider.of<myTasks>(context, listen: false)
                 .changeStatus(value!, widget.index);
           },
         ),
@@ -156,21 +158,54 @@ class _TaskTileState extends State<TaskTile> {
 class myTasks extends ChangeNotifier {
   List<String> tasks = [];
   List<bool> status = [];
+  List<String> boolList = [];
+  myTasks() {
+    callme();
+  }
+  Future callme() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    tasks = prefs.getStringList('tasks') ?? [];
+    boolList = prefs.getStringList('boolList') ?? [];
+    for (int i = 0; i < boolList.length; i++) {
+      if (boolList[i] == 'true') {
+        status.add(true);
+      } else {
+        status.add(false);
+      }
+    }
+    notifyListeners();
+  }
 
-  void addTask(String task) {
+  Future addTask(String task) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
     tasks.add(task);
+    print(tasks);
     status.add(false);
+    boolList.add("false");
+    prefs.setStringList('tasks', tasks);
+    prefs.setStringList('boolList', boolList);
     notifyListeners();
   }
 
-  void changeStatus(bool value, int index) {
+  Future changeStatus(bool value, int index) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
     status[index] = value;
+    if (value) {
+      boolList[index] = "true";
+    } else {
+      boolList[index] = "false";
+    }
+    prefs.setStringList('boolList', boolList);
     notifyListeners();
   }
 
-  void removeTask(int index) {
+  Future removeTask(int index) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
     tasks.removeAt(index);
     status.removeAt(index);
+    boolList.removeAt(index);
+    prefs.setStringList('tasks', tasks);
+    prefs.setStringList('boolList', boolList);
     notifyListeners();
   }
 }
