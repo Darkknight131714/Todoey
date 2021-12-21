@@ -129,10 +129,23 @@ class TaskTile extends StatefulWidget {
 class _TaskTileState extends State<TaskTile> {
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onLongPress: () async {
+    return Dismissible(
+      key: Key(Provider.of<myTasks>(context).tasks[widget.index]),
+      background: Container(
+        color: Colors.red,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Icon(Icons.delete),
+            Icon(Icons.delete),
+          ],
+        ),
+      ),
+      onDismissed: (direction) async {
         await Provider.of<myTasks>(context, listen: false)
             .removeTask(widget.index);
+        final snackBar = SnackBar(content: Text('Item Deleted'));
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
       },
       child: ListTile(
         title: Text(
